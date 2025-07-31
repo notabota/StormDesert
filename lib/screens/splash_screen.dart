@@ -54,8 +54,7 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   void _navigateToNext() {
-    // In a real app, you would check if it's the first launch
-    // For demo purposes, we'll show onboarding every time
+    // Demo always shows onboarding - check first launch in production
     final isFirstLaunch = true; // You would check SharedPreferences here
     
     Navigator.of(context).pushReplacement(

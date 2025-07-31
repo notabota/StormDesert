@@ -15,9 +15,8 @@ class CameraService {
   final List<EyeAnalysisResult> _eyeAnalyses = [];
   bool _isCapturing = false;
 
-  // Capture eye image during test
   Future<String?> captureEyeImage(CameraController cameraController, {String? testType}) async {
-    if (_isCapturing) return null; // Skip if already capturing
+    if (_isCapturing) return null;
     
     try {
       if (!cameraController.value.isInitialized) {
@@ -27,18 +26,14 @@ class CameraService {
 
       _isCapturing = true;
 
-      // Get temporary directory for storing images
       final tempDir = await getTemporaryDirectory();
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final imagePath = path.join(tempDir.path, 'eye_capture_${timestamp}.jpg');
 
-      // Capture image
       final XFile imageFile = await cameraController.takePicture();
       
-      // Copy to our designated path
       final File savedImage = await File(imageFile.path).copy(imagePath);
       
-      // Store the image path
       _capturedImages.add(savedImage.path);
       
       print('Eye image captured: ${savedImage.path}');
@@ -52,16 +47,14 @@ class CameraService {
     }
   }
 
-  // Capture multiple images during test session
   Future<void> captureTestSession(CameraController cameraController, String testType) async {
-    // Capture images at different intervals during test
+    // Staggered captures during test session
     for (int i = 0; i < 3; i++) {
       await Future.delayed(Duration(seconds: 2 + i * 3)); // Stagger captures
       await captureEyeImage(cameraController, testType: testType);
     }
   }
 
-  // Analyze all captured images using AI
   Future<List<EyeAnalysisResult>> analyzeAllCapturedImages() async {
     final results = <EyeAnalysisResult>[];
     
@@ -78,7 +71,6 @@ class CameraService {
     return results;
   }
 
-  // Get the best analysis result (highest confidence)
   EyeAnalysisResult? getBestAnalysisResult() {
     if (_eyeAnalyses.isEmpty) return null;
     
@@ -92,11 +84,9 @@ class CameraService {
     return bestResult;
   }
 
-  // Get aggregate analysis from all captured images
   EyeAnalysisResult? getAggregateAnalysis() {
     if (_eyeAnalyses.isEmpty) return null;
     
-    // Count conditions and find most common
     final conditionCounts = <String, int>{};
     double totalConfidence = 0.0;
     final allRiskFactors = <String>{};
@@ -109,7 +99,6 @@ class CameraService {
       allRecommendations.addAll(analysis.recommendations);
     }
     
-    // Find most common condition
     String mostCommonCondition = 'normal';
     int maxCount = 0;
     
@@ -130,9 +119,7 @@ class CameraService {
     );
   }
 
-  // Cleanup captured images and analysis results
   Future<void> cleanup() async {
-    // Delete captured image files
     for (final imagePath in _capturedImages) {
       try {
         final file = File(imagePath);
@@ -144,32 +131,25 @@ class CameraService {
       }
     }
     
-    // Clear lists
     _capturedImages.clear();
     _eyeAnalyses.clear();
   }
 
-  // Get captured image paths (for debugging/review)
   List<String> getCapturedImagePaths() {
     return List.from(_capturedImages);
   }
 
-  // Get all analysis results
   List<EyeAnalysisResult> getAllAnalysisResults() {
     return List.from(_eyeAnalyses);
   }
 
-  // Periodic capture during active test
   Future<void> startPeriodicCapture(CameraController cameraController, String testType) async {
-    // Capture an image every 10 seconds during test
-    // This would be called when test starts
+    // Captures images at 10-second intervals
     
     try {
-      // Initial capture
       await captureEyeImage(cameraController, testType: testType);
       
-      // Schedule additional captures (in a real implementation, 
-      // you'd use a Timer or stream subscription)
+      // Additional timed captures
       await Future.delayed(const Duration(seconds: 10));
       await captureEyeImage(cameraController, testType: testType);
       
@@ -181,13 +161,11 @@ class CameraService {
     }
   }
 
-  // Generate mock eye tracking data from captured images
   List<EyeTrackingData> generateEyeTrackingData() {
     final eyeTrackingData = <EyeTrackingData>[];
     final now = DateTime.now();
     
-    // Generate mock tracking data for demonstration
-    // In a real implementation, this would extract actual eye positions from images
+    // Mock data for demo - production extracts from actual images
     for (int i = 0; i < 50; i++) {
       eyeTrackingData.add(EyeTrackingData(
         timestamp: now.subtract(Duration(seconds: i)),
@@ -203,12 +181,10 @@ class CameraService {
     return eyeTrackingData;
   }
 
-  // Check if any images have been captured
   bool hasCaptures() {
     return _capturedImages.isNotEmpty;
   }
 
-  // Get capture statistics
   Map<String, dynamic> getCaptureStatistics() {
     return {
       'totalCaptures': _capturedImages.length,

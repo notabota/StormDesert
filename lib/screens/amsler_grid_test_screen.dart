@@ -32,11 +32,9 @@ class _AmslerGridTestScreenState extends State<AmslerGridTestScreen> {
   List<Offset> _blurPoints = [];
   List<Offset> _missingPoints = [];
   
-  // Timer variables
   Timer? _eyeTimer;
   int _remainingTime = 30;
   
-  // Questionnaire responses
   Map<String, dynamic> _questionnaireResponses = {};
   
   @override
@@ -47,7 +45,6 @@ class _AmslerGridTestScreenState extends State<AmslerGridTestScreen> {
 
   Future<void> _initializeCamera() async {
     if (cameras.isNotEmpty) {
-      // Find the front-facing camera
       CameraDescription? frontCamera;
       for (final camera in cameras) {
         if (camera.lensDirection == CameraLensDirection.front) {

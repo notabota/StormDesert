@@ -23,7 +23,6 @@ class AppDrawer extends StatelessWidget {
             title: 'Bắt đầu Kiểm tra Thị lực',
             onTap: () {
               Navigator.pop(context);
-              // Navigate to test screen
             },
           ),
           _buildDrawerItem(

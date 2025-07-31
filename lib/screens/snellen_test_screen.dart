@@ -52,7 +52,6 @@ class _SnellenTestScreenState extends State<SnellenTestScreen> {
 
   Future<void> _initializeCamera() async {
     if (cameras.isNotEmpty) {
-      // Find the front-facing camera
       CameraDescription? frontCamera;
       for (final camera in cameras) {
         if (camera.lensDirection == CameraLensDirection.front) {

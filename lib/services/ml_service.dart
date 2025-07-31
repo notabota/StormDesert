@@ -13,12 +13,12 @@ class MLService {
   Interpreter? _interpreter;
   bool _isModelLoaded = false;
   
-  // Model configuration
+  // Input dimensions and model path
   static const int _inputSize = 224;
   static const int _numChannels = 3;
   static const String _modelPath = 'assets/models/eye_effnet_fp16.tflite';
   
-  // Eye condition labels (based on the model's training)
+  // Supported eye conditions
   static const List<String> _eyeConditionLabels = [
     'Central Serous Chorioretinopathy [Color Fundus]',
     'Diabetic Retinopathy',
@@ -36,14 +36,11 @@ class MLService {
     try {
       print('Loading TensorFlow Lite model...');
       
-      // Load model from assets
       final modelData = await rootBundle.load(_modelPath);
       final modelBytes = modelData.buffer.asUint8List();
       
-      // Create interpreter
       _interpreter = Interpreter.fromBuffer(modelBytes);
       
-      // Verify model input/output shapes
       final inputTensors = _interpreter!.getInputTensors();
       final outputTensors = _interpreter!.getOutputTensors();
       
@@ -68,7 +65,6 @@ class MLService {
     }
 
     try {
-      // Load and preprocess image
       final imageFile = File(imagePath);
       if (!await imageFile.exists()) {
         throw Exception('Image file not found: $imagePath');
@@ -81,20 +77,17 @@ class MLService {
         throw Exception('Failed to decode image');
       }
 
-      // Preprocess image for model input
       final preprocessedImage = _preprocessImage(image);
       
-      // Run inference
       final output = List.filled(_eyeConditionLabels.length, 0.0).reshape([1, _eyeConditionLabels.length]);
       _interpreter!.run(preprocessedImage, output);
       
-      // Process results
       final predictions = output[0] as List<double>;
       return _processEyeAnalysisResults(predictions);
       
     } catch (e) {
       print('Error analyzing eye image: $e');
-      // Return a default result in case of error
+      // Fallback on analysis failure
       return EyeAnalysisResult(
         condition: 'Healthy',
         confidence: 0.5,
@@ -111,7 +104,7 @@ class MLService {
     int index = 0;
     for (int y = 0; y < _inputSize; y++) {
       for (int x = 0; x < _inputSize; x++) {
-        final pixel = resized.getPixel(x, y);  // ← returns a Pixel object
+        final pixel = resized.getPixel(x, y);
 
         input[index++] = pixel.r / 255.0;
         input[index++] = pixel.g / 255.0;
@@ -123,7 +116,6 @@ class MLService {
   }
 
   EyeAnalysisResult _processEyeAnalysisResults(List<double> predictions) {
-    // Find the class with highest confidence
     int maxIndex = 0;
     double maxConfidence = predictions[0];
     
@@ -137,7 +129,6 @@ class MLService {
     final predictedCondition = _eyeConditionLabels[maxIndex];
     final confidence = maxConfidence;
     
-    // Generate risk factors and recommendations based on prediction
     final riskFactors = _generateRiskFactors(predictedCondition, predictions);
     final recommendations = _generateRecommendations(predictedCondition, confidence);
     
@@ -332,18 +323,14 @@ class MLService {
     }
 
     try {
-      // Analyze eye images if available
       EyeAnalysisResult? eyeAnalysis;
       if (eyeTrackingData.isNotEmpty) {
-        // For demo purposes, we'll simulate eye analysis
-        // In a real implementation, you'd analyze captured eye images
+        // Simulate analysis for demo - production would use actual images
         eyeAnalysis = await _simulateEyeAnalysis(testResults);
       }
       
-      // Calculate vision scores based on test performance
       double visionScore = _calculateVisionScore(testResults, testType);
       
-      // Adjust score based on AI analysis if available
       if (eyeAnalysis != null && eyeAnalysis.condition != 'normal') {
         visionScore *= (0.5 + eyeAnalysis.confidence * 0.5);
       }
@@ -364,7 +351,7 @@ class MLService {
       );
     } catch (e) {
       print('Error analyzing vision test: $e');
-      // Return fallback analysis
+      // Default response when analysis fails
       return VisionAnalysisResult(
         visionScore: 0.5,
         riskLevel: 'Medium',
@@ -376,8 +363,7 @@ class MLService {
   }
 
   Future<EyeAnalysisResult> _simulateEyeAnalysis(List<TestResult> testResults) async {
-    // Simulate AI analysis based on test performance
-    // In real implementation, this would analyze actual eye images
+    // Demo simulation - production uses actual eye image analysis
     
     final correctAnswers = testResults.where((r) => r.isCorrect).length;
     final accuracy = testResults.isNotEmpty ? correctAnswers / testResults.length : 0.5;
@@ -419,7 +405,7 @@ class MLService {
 
   String _determineRiskLevel(double visionScore, EyeAnalysisResult? eyeAnalysis) {
     if (eyeAnalysis != null && eyeAnalysis.condition != 'Healthy') {
-      // Emergency conditions
+      // Critical conditions requiring immediate attention
       if (eyeAnalysis.condition == 'Retinal Detachment' || 
           eyeAnalysis.condition == 'Disc Edema') {
         return 'Emergency';
@@ -523,7 +509,6 @@ class VisionAnalysisResult {
   }
 }
 
-// Keep these classes for compatibility with existing code
 class EyeTrackingData {
   final DateTime timestamp;
   final double leftEyeX;

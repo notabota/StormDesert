@@ -37,34 +37,28 @@ class _ResultsScreenState extends State<ResultsScreen> {
 
   Future<void> _analyzeResults() async {
     try {
-      // Get the current session and calculate real scores
       final currentSession = _sessionManager.getCurrentSession();
       if (currentSession != null) {
-        // Save the completed session to test data service
         _testDataService.addCompletedSession(currentSession);
         
-        // Get AI analysis from captured eye images (run in background)
         EyeAnalysisResult? eyeAnalysis;
         if (_cameraService.hasCaptures()) {
           eyeAnalysis = _cameraService.getAggregateAnalysis();
         }
         
-        // Generate eye tracking data from camera service
         final eyeTrackingData = _cameraService.generateEyeTrackingData();
         
-        // Run ML analysis in background but don't use results for display
         _mlService.analyzeVisionTest(
           widget.testType,
           widget.testResults,
           eyeTrackingData,
         ).then((mlResult) {
           print('ML Analysis completed (background): ${mlResult.diagnosis}');
-          // Store ML result for future use but don't display
+          // Store for future use without displaying
         }).catchError((error) {
           print('ML Analysis error (background): $error');
         });
         
-        // Create analysis result based only on test performance
         final testBasedResult = _createTestBasedAnalysis();
         
         setState(() {

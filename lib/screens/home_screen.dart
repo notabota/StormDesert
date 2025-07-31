@@ -107,7 +107,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final mediumRiskCount = _stats['mediumRiskCount'] as int;
     final highRiskCount = _stats['highRiskCount'] as int;
     
-    // Show empty state if no tests have been taken
     if (totalTests == 0) {
       return Container(
         padding: const EdgeInsets.all(16),
